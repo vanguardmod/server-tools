@@ -59,7 +59,6 @@ USAGE
 
 from __future__ import annotations
 
-import json
 import tkinter as tk
 from datetime import datetime
 from pathlib import Path
