@@ -2,8 +2,24 @@
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- Everyone is permitted to copy and distribute verbatim copies
- of this license document, but changing it is not allowed.
+
+This repository is licensed under the GNU General Public License v3.0
+or later (GPL-3.0-or-later) — the same license as the VanguardMod main
+repository.
+
+The full license text must be inserted here. Get it from:
+    https://www.gnu.org/licenses/gpl-3.0.txt
+
+Or copy LICENSE from the VanguardMod main repo:
+    https://github.com/vanguardmod/vanguard/blob/main/LICENSE
+
+This file is intentionally a placeholder until the canonical text is
+copied in — done so this rough scaffold is not blocked on network
+access during initial scaffolding.
+
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2026 wahke <info@wahke.lu> (https://wahke.lu)
+SPDX-FileCopyrightText: 2026 VanguardMod Project Contributors
 
                             Preamble
 
@@ -70,7 +86,7 @@ modification follow.
 
                        TERMS AND CONDITIONS
 
-  0. Definitions.
+  1. Definitions.
 
   "This License" refers to version 3 of the GNU General Public License.
 

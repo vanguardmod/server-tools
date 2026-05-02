@@ -1,0 +1,13 @@
+# Runtime dependencies for config-builder v0.1.x — none.
+# tkinter ships with Python on Windows/macOS; on Linux it may need
+# an OS package: `sudo apt install python3-tk` (Debian/Ubuntu) or
+# equivalent.
+#
+# Future runtime deps (Phase 2+):
+#   PyYAML>=6.0          # cvar/profile database
+#   customtkinter>=5.2   # modern GUI look
+#   pydantic>=2.0        # cvar schema validation
+#
+# Dev deps (used by `pip install -r requirements-dev.txt` once that file
+# is added — for now: just pytest):
+#   pytest>=7.0
