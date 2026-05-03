@@ -301,8 +301,8 @@ def load_profile_set(directory: Path) -> ProfileSet:
 def default_profiles_path() -> Path:
     """Path to the bundled ``data/profiles/`` directory.
 
-    Mirrors ``cvar_database.default_database_path``. M9 will switch
-    this to ``importlib.resources`` and handle the PyInstaller
-    ``sys._MEIPASS`` case alongside the cvars.yaml relocation.
+    Resolves both the source/editable install case and the PyInstaller
+    bundle case via ``vanguard_config_builder._resources``.
     """
-    return Path(__file__).resolve().parent.parent / "data" / "profiles"
+    from .._resources import profiles_dir
+    return profiles_dir()

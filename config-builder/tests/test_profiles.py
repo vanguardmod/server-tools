@@ -15,15 +15,12 @@ Two test surfaces:
 """
 from __future__ import annotations
 
-import sys
 import textwrap
 from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from core.profiles import (  # noqa: E402
+from vanguard_config_builder.core.profiles import (
     MAX_INHERITANCE_DEPTH,
     Profile,
     ProfileError,

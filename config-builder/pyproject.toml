@@ -49,29 +49,23 @@ Repository = "https://github.com/vanguardmod/server-tools"
 Issues = "https://github.com/vanguardmod/server-tools/issues"
 
 [project.scripts]
-vanguard-config-builder = "main:main"
+vanguard-config-builder = "vanguard_config_builder.cli:main"
 
 # ---------------------------------------------------------------------------
-# Setuptools layout — Phase 2 transitional config
+# Setuptools layout — src/ layout (M9)
 # ---------------------------------------------------------------------------
-# The current flat layout (main.py at top, core/ as a package, data/ as
-# bundled YAML files) confuses setuptools' auto-discovery: it sees
-# `core` and `data` as competing top-level packages and refuses to
-# build. Spell out exactly what's a Python module vs. a package vs.
-# bundled data.
-#
-# M9 switches to a `src/vanguard_config_builder/` layout and this
-# block collapses to a single `[tool.setuptools.packages.find]` entry.
-
-[tool.setuptools]
-py-modules = ["main", "cli"]
+# The package lives at src/vanguard_config_builder/. Bundled YAML data
+# files (cvars.yaml, profiles/*.yaml) ship as package_data so a
+# `pip install` puts them next to the .py modules and the runtime
+# resolver in `_resources.py` can find them. PyInstaller bundles use
+# the same in-package layout via `--add-data` (see
+# .github/workflows/config-builder-release.yml).
 
 [tool.setuptools.packages.find]
-include = ["core", "core.*"]
-exclude = ["data*", "tests*"]
+where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = []
+vanguard_config_builder = ["data/*.yaml", "data/profiles/*.yaml"]
 
 # ---------------------------------------------------------------------------
 # Tooling configuration

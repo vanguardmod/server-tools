@@ -1,55 +1,15 @@
-"""Smoke tests for config-builder.
+"""Smoke tests for config-builder — package-level integration checks.
 
-These tests stub out tkinter so they run in headless CI environments.
-They cover the pure-Python parts: generator, parser, validator, and
-profile dictionaries.
-
-TODO Phase 2: Add proper unit tests once parser/generator/validator
-              are split into their own modules.
-TODO Phase 3: Add GUI tests via pytest-tk or similar.
+The tkinter stub installed in conftest.py makes the
+``vanguard_config_builder`` package import safely on headless CI.
+Per-module unit tests live in their own files; this suite holds the
+integration checks that cross multiple modules.
 """
 from __future__ import annotations
 
-import sys
-import types
-
 import pytest
 
-
-# ---------------------------------------------------------------------------
-# tkinter stub — must be installed BEFORE importing main.py
-# ---------------------------------------------------------------------------
-def _install_tkinter_stub() -> None:
-    for name in (
-        "tkinter",
-        "tkinter.ttk",
-        "tkinter.filedialog",
-        "tkinter.messagebox",
-    ):
-        if name not in sys.modules:
-            sys.modules[name] = types.ModuleType(name)
-
-    tk = sys.modules["tkinter"]
-    # Just enough surface for the import to succeed.
-    tk.IntVar = lambda value=0: types.SimpleNamespace(
-        get=lambda: value, set=lambda v: None, trace_add=lambda *a, **kw: None
-    )
-    tk.StringVar = lambda value="": types.SimpleNamespace(
-        get=lambda: value, set=lambda v: None, trace_add=lambda *a, **kw: None
-    )
-    for attr in ("Tk", "Text", "Canvas", "Menu", "Variable"):
-        setattr(tk, attr, object)
-    for attr in ("NW", "W", "LEFT", "RIGHT", "BOTH", "X", "Y", "END",
-                 "HORIZONTAL", "VERTICAL", "NONE"):
-        setattr(tk, attr, attr.lower())
-    tk.TclError = Exception
-
-
-_install_tkinter_stub()
-
-# Now safe to import the module under test
-sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent.parent))
-import main as m  # noqa: E402
+import vanguard_config_builder as m
 
 
 # ---------------------------------------------------------------------------

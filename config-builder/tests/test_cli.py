@@ -11,14 +11,11 @@ mainloop, exercised manually and on CI via the smoke import.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-import cli  # noqa: E402
+from vanguard_config_builder import cli
 
 
 # ---------------------------------------------------------------------------

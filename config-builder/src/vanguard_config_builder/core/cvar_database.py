@@ -279,11 +279,12 @@ def load_cvar_database(path: Path) -> CvarDatabase:
 # Convenience: locate the bundled cvars.yaml
 # ---------------------------------------------------------------------------
 def default_database_path() -> Path:
-    """Path to the bundled ``data/cvars.yaml`` next to the source.
+    """Path to the bundled ``data/cvars.yaml``.
 
-    During Phase 2 the data files live at ``config-builder/data/``.
-    Once the project is repackaged under ``src/vanguard_config_builder/``
-    in M9, this will switch to ``importlib.resources`` and also handle
-    the PyInstaller ``sys._MEIPASS`` case.
+    Resolves both the source/editable install case (file next to the
+    package) and the PyInstaller bundle case (``sys._MEIPASS``
+    extraction). The dispatch lives in
+    ``vanguard_config_builder._resources``.
     """
-    return Path(__file__).resolve().parent.parent / "data" / "cvars.yaml"
+    from .._resources import cvars_yaml_path
+    return cvars_yaml_path()

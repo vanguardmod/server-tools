@@ -10,12 +10,7 @@ through the main.py wrappers.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from core.cfg_parser import parse_cfg  # noqa: E402
+from vanguard_config_builder.core.cfg_parser import parse_cfg
 
 # Minimal cvar table for type-coercion behavior. ``parse_cfg`` accepts
 # ``cvars=None`` (the default) and returns raw strings in that mode;

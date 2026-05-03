@@ -16,17 +16,7 @@ and a shared ``conftest.py`` will replace the per-file sys.path tweak.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-# ---------------------------------------------------------------------------
-# Make `core/` importable without installing the package. Mirrors the
-# pattern in test_smoke.py so this file can run standalone via
-# `python -m pytest tests/test_cfg_generator.py`.
-# ---------------------------------------------------------------------------
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from core.cfg_generator import generate_cfg  # noqa: E402
+from vanguard_config_builder.core.cfg_generator import generate_cfg
 
 # Minimal cvar table — enough to drive every code path without pulling in
 # main.CVARS (which would require the tkinter stub). Mirrors the shape of

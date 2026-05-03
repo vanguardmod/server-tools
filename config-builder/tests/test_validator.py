@@ -9,12 +9,7 @@ rule engine) gets its own additions on top.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from core.validator import validate  # noqa: E402
+from vanguard_config_builder.core.validator import validate
 
 # Minimal cvar table covering each type plus the two cross-cvar rules.
 _CVARS: dict[str, dict[str, object]] = {

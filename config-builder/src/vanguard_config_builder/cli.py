@@ -37,21 +37,22 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from core.cfg_generator import generate_cfg
-from core.cfg_parser import parse_cfg
-from core.cvar_database import (
+from . import __version__
+from .core.cfg_generator import generate_cfg
+from .core.cfg_parser import parse_cfg
+from .core.cvar_database import (
     CvarDatabase,
     CvarDatabaseError,
     default_database_path,
     load_cvar_database,
 )
-from core.profiles import (
+from .core.profiles import (
     ProfileError,
     ProfileSet,
     default_profiles_path,
     load_profile_set,
 )
-from core.validator import validate
+from .core.validator import validate
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -59,21 +60,6 @@ from core.validator import validate
 EXIT_SUCCESS = 0
 EXIT_VALIDATION = 2
 EXIT_IO = 3
-
-_VERSION_FILE = Path(__file__).resolve().parent / "VERSION"
-
-
-def _read_version() -> str:
-    """Read the tool version from the bundled ``VERSION`` file.
-
-    Strips the leading ``v`` so the rendered string suits both display
-    contexts (``v0.2.0`` in cfg headers) and PEP-440 contexts (the
-    plain number for ``--version``). Returns ``unknown`` if the file
-    is missing — defensive only; CI guarantees it's there.
-    """
-    if not _VERSION_FILE.is_file():
-        return "unknown"
-    return _VERSION_FILE.read_text(encoding="utf-8").strip().lstrip("v")
 
 
 # ---------------------------------------------------------------------------
@@ -266,7 +252,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version",
         action="version",
-        version=f"%(prog)s {_read_version()}",
+        version=f"%(prog)s {__version__}",
     )
 
     sub = parser.add_subparsers(dest="command", metavar="COMMAND")
@@ -354,10 +340,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     # No subcommand → launch the GUI. Lazy import so headless commands
-    # don't pay the tkinter / cvars.yaml import cost up front.
+    # don't pay the tkinter import cost up front.
     if args.command is None:
-        from main import main as gui_main  # noqa: PLC0415  — intentional lazy
-        return gui_main()
+        from .gui.main_window import run_gui  # noqa: PLC0415 — intentional lazy
+        return run_gui()
 
     # Headless commands share a single load of the database + profile set.
     try:
@@ -374,7 +360,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_IO
 
-    version = _read_version()
+    version = __version__
 
     if args.command == "generate":
         return cmd_generate(args, legacy_cvars, ps, version)
