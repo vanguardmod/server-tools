@@ -32,7 +32,10 @@ classifiers = [
     "Topic :: System :: Systems Administration",
 ]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "PyYAML>=6.0",
+    "pydantic>=2.0",
+]
 
 [project.optional-dependencies]
 dev = [

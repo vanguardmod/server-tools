@@ -76,8 +76,10 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
-          # TODO Phase 2: Add runtime deps (PyYAML etc.) here
+          pip install -r requirements.txt pyinstaller
+          # requirements.txt resolves to `-e .` so the runtime deps
+          # (PyYAML, pydantic) declared in pyproject.toml come along.
+          # TODO Phase 2 (M9): add `--add-data` for bundled YAML files.
 
       - name: Resolve version
         id: version
