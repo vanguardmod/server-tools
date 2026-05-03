@@ -52,6 +52,28 @@ Issues = "https://github.com/vanguardmod/server-tools/issues"
 vanguard-config-builder = "main:main"
 
 # ---------------------------------------------------------------------------
+# Setuptools layout — Phase 2 transitional config
+# ---------------------------------------------------------------------------
+# The current flat layout (main.py at top, core/ as a package, data/ as
+# bundled YAML files) confuses setuptools' auto-discovery: it sees
+# `core` and `data` as competing top-level packages and refuses to
+# build. Spell out exactly what's a Python module vs. a package vs.
+# bundled data.
+#
+# M9 switches to a `src/vanguard_config_builder/` layout and this
+# block collapses to a single `[tool.setuptools.packages.find]` entry.
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+include = ["core", "core.*"]
+exclude = ["data*", "tests*"]
+
+[tool.setuptools.package-data]
+"*" = []
+
+# ---------------------------------------------------------------------------
 # Tooling configuration
 # ---------------------------------------------------------------------------
 
