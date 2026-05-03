@@ -66,6 +66,7 @@ from typing import Any
 
 from core.cfg_generator import generate_cfg as _generate_cfg
 from core.cfg_parser import parse_cfg as _parse_cfg
+from core.cvar_database import default_database_path, load_cvar_database
 from core.validator import validate as _validate
 
 # ============================================================================
@@ -77,275 +78,38 @@ __version__ = "0.1.0"
 
 
 # ============================================================================
-# CVAR DATABASE
+# CVAR DATABASE & CATEGORIES (loaded from data/cvars.yaml)
 # ============================================================================
-# TODO Phase 2: Move this dict into data/cvars.yaml and load via PyYAML.
-#               Schema should validate on load (jsonschema or pydantic).
-# TODO Phase 2: Add per-cvar tooltip support in the GUI.
+# Phase 2 / M5: cvars and categories are now externalized to YAML so
+# server admins can extend the database without touching Python. The
+# inline dicts that lived here in v0.1.0 were copied verbatim into
+# data/cvars.yaml; schema is enforced on load (pydantic v2).
+#
+# CVARS and CATEGORIES are kept at module level in their v0.1.0 shapes
+# (flat dict-of-dicts and list-of-tuples respectively) for backward
+# compatibility with the v0.1.0 GUI layout code and the smoke test
+# suite. M9 will refactor the GUI to consume the typed CvarDatabase
+# directly and these legacy shims can go.
+#
+# TODO Phase 3: Add per-cvar tooltip support in the GUI.
 # TODO Phase 3: Add a `validation` field — regex string, lambda name, or
 #               cross-cvar rule reference.
 # TODO Phase 3: Add `requires` field (e.g. g_warmup requires g_doWarmup=1).
-# TODO Phase 4: Add `since_version` so the tool can warn when generating
-#               cfgs for older VanguardMod releases.
-#
-# Schema (current rough version):
-#   key:         cvar name (str)
-#   type:        'bool' | 'int' | 'string' | 'enum'
-#   default:     default value
-#   range:       (min, max) for int, list of options for enum, None otherwise
-#   category:    'identity' | 'network' | 'match' | 'hitbox' | 'anticheat'
-#   description: human-readable tooltip text
-#   archive:     bool — write as `seta` (archived) vs `set` (session-only)?
-#   secret:      bool — render as password input, redact in logs?
+# TODO Phase 4: Surface `since_version` warnings when generating cfgs
+#               for older VanguardMod releases.
 
-CVARS: dict[str, dict[str, Any]] = {
-    # ---- Server Identity ---------------------------------------------------
-    "sv_hostname": {
-        "type": "string",
-        "default": "VanguardMod Server",
-        "range": None,
-        "category": "identity",
-        "description": "Server name shown in the server browser",
-        "archive": True,
-        "secret": False,
-    },
-    "g_motd": {
-        "type": "string",
-        "default": "",
-        "range": None,
-        "category": "identity",
-        "description": "Message of the Day shown to connecting players",
-        "archive": True,
-        "secret": False,
-    },
-    "rconpassword": {
-        "type": "string",
-        "default": "",
-        "range": None,
-        "category": "identity",
-        "description": "Remote console password (KEEP SECRET)",
-        "archive": False,
-        "secret": True,
-    },
-    "g_password": {
-        "type": "string",
-        "default": "",
-        "range": None,
-        "category": "identity",
-        "description": "Server join password (leave empty for public server)",
-        "archive": False,
-        "secret": True,
-    },
+_DATABASE = load_cvar_database(default_database_path())
 
-    # ---- Network Settings --------------------------------------------------
-    "sv_fps": {
-        "type": "int",
-        "default": 20,
-        "range": (20, 125),
-        "category": "network",
-        "description": "Server tick rate. Cup standard: 40. Public default: 20.",
-        "archive": True,
-        "secret": False,
-    },
-    "sv_maxclients": {
-        "type": "int",
-        "default": 32,
-        "range": (2, 64),
-        "category": "network",
-        "description": "Maximum number of player slots",
-        "archive": True,
-        "secret": False,
-    },
-    "g_antilag": {
-        "type": "bool",
-        "default": 1,
-        "range": None,
-        "category": "network",
-        "description": "Enable lag compensation for hit detection",
-        "archive": True,
-        "secret": False,
-    },
-    "g_antiwarp": {
-        "type": "bool",
-        "default": 1,
-        "range": None,
-        "category": "network",
-        "description": "Enable anti-warp (rejects abnormal client movement)",
-        "archive": True,
-        "secret": False,
-    },
+# v0.1.0-shaped flat dict — what the GUI and smoke tests inspect.
+# Generated from the loaded schema; the YAML is the source of truth.
+CVARS: dict[str, dict[str, Any]] = _DATABASE.as_legacy_dict()
 
-    # ---- Match Rules -------------------------------------------------------
-    "g_friendlyFire": {
-        "type": "bool",
-        "default": 1,
-        "range": None,
-        "category": "match",
-        "description": "Allow players to damage their own teammates",
-        "archive": True,
-        "secret": False,
-    },
-    "g_doWarmup": {
-        "type": "bool",
-        "default": 0,
-        "range": None,
-        "category": "match",
-        "description": "Enable warmup phase before round start",
-        "archive": True,
-        "secret": False,
-    },
-    "g_warmup": {
-        "type": "int",
-        "default": 30,
-        "range": (0, 300),
-        "category": "match",
-        "description": "Warmup duration in seconds (only if g_doWarmup=1)",
-        "archive": True,
-        "secret": False,
-    },
-    "g_speed": {
-        "type": "int",
-        "default": 320,
-        "range": (100, 999),
-        "category": "match",
-        "description": "Player movement speed (320 = vanilla)",
-        "archive": True,
-        "secret": False,
-    },
-    "g_gravity": {
-        "type": "int",
-        "default": 800,
-        "range": (1, 9999),
-        "category": "match",
-        "description": "World gravity (800 = vanilla)",
-        "archive": True,
-        "secret": False,
-    },
-    "g_knockback": {
-        "type": "int",
-        "default": 1000,
-        "range": (0, 9999),
-        "category": "match",
-        "description": "Damage knockback multiplier (1000 = vanilla)",
-        "archive": True,
-        "secret": False,
-    },
-    "team_maxSoldiers": {
-        "type": "int",
-        "default": -1,
-        "range": (-1, 32),
-        "category": "match",
-        "description": "Max soldiers per team (-1 = unlimited)",
-        "archive": True,
-        "secret": False,
-    },
-    "team_maxMedics": {
-        "type": "int",
-        "default": -1,
-        "range": (-1, 32),
-        "category": "match",
-        "description": "Max medics per team (-1 = unlimited)",
-        "archive": True,
-        "secret": False,
-    },
-    "team_maxEngineers": {
-        "type": "int",
-        "default": -1,
-        "range": (-1, 32),
-        "category": "match",
-        "description": "Max engineers per team (-1 = unlimited)",
-        "archive": True,
-        "secret": False,
-    },
-    "team_maxFieldops": {
-        "type": "int",
-        "default": -1,
-        "range": (-1, 32),
-        "category": "match",
-        "description": "Max field ops per team (-1 = unlimited)",
-        "archive": True,
-        "secret": False,
-    },
-    "team_maxCovertops": {
-        "type": "int",
-        "default": -1,
-        "range": (-1, 32),
-        "category": "match",
-        "description": "Max covert ops per team (-1 = unlimited)",
-        "archive": True,
-        "secret": False,
-    },
-
-    # ---- Hitbox / Combat (VanguardMod-specific) ---------------------------
-    "vanguard_hitbox_strict": {
-        "type": "bool",
-        "default": 1,
-        "range": None,
-        "category": "hitbox",
-        "description": "Strict mode: reject hits without bone-region match",
-        "archive": True,
-        "secret": False,
-    },
-    "vanguard_hitbox_debug": {
-        "type": "bool",
-        "default": 0,
-        "range": None,
-        "category": "hitbox",
-        "description": "Print VG_DIAG strict-hitbox reject lines to log",
-        "archive": False,
-        "secret": False,
-    },
-    "vanguard_diag_dump": {
-        "type": "bool",
-        "default": 0,
-        "range": None,
-        "category": "hitbox",
-        "description": "One-shot capsule diagnostic dump (auto-resets)",
-        "archive": False,
-        "secret": False,
-    },
-    "vanguard_netcode_profile": {
-        "type": "enum",
-        "default": "public",
-        "range": ["cup", "public", "custom"],
-        "category": "network",
-        "description": "Netcode preset: cup=40fps tight, public=20fps standard",
-        "archive": True,
-        "secret": False,
-    },
-
-    # ---- Anti-Cheat / Misc ------------------------------------------------
-    "vanguard_dev": {
-        "type": "bool",
-        "default": 0,
-        "range": None,
-        "category": "anticheat",
-        "description": "Enable dev features (gates cg_vanguardDevMultibox etc.)",
-        "archive": False,
-        "secret": False,
-    },
-
-    # TODO Phase 2: Add WolfGuard cvars when WolfGuard public hooks are
-    #               documented (currently closed-source, only stub cvars).
-    # TODO Phase 2: Add g_xpSaver, g_logSync, g_log, g_inactivity, etc.
-    # TODO Phase 2: Pull full cvar list from VanguardMod
-    #               docs/notes/PHASE_TOOLING_AUDIT.md when it ships.
-}
-
-
-# ============================================================================
-# CATEGORY METADATA
-# ============================================================================
-# TODO Phase 2: Move into cvars.yaml top-level under `categories:` so the
-# tool reads category labels and ordering from the database too.
-
-CATEGORIES = [
-    ("identity",  "Server Identity"),
-    ("network",   "Network Settings"),
-    ("match",     "Match Rules"),
-    ("hitbox",    "Hitbox / Combat"),
-    ("anticheat", "Anti-Cheat & Dev"),
+# v0.1.0-shaped list of (id, label) tuples — same iteration semantics
+# the menu and tab construction code already relied on.
+CATEGORIES: list[tuple[str, str]] = [
+    (cat.id, cat.label) for cat in _DATABASE.categories
 ]
+
 
 
 # ============================================================================
