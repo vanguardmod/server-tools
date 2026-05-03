@@ -67,6 +67,7 @@ from typing import Any
 from core.cfg_generator import generate_cfg as _generate_cfg
 from core.cfg_parser import parse_cfg as _parse_cfg
 from core.cvar_database import default_database_path, load_cvar_database
+from core.profiles import default_profiles_path, load_profile_set
 from core.validator import validate as _validate
 
 # ============================================================================
@@ -113,78 +114,39 @@ CATEGORIES: list[tuple[str, str]] = [
 
 
 # ============================================================================
-# PROFILE TEMPLATES
+# PROFILE TEMPLATES (loaded from data/profiles/)
 # ============================================================================
-# TODO Phase 2: Move each profile into data/profiles/<name>.yaml.
-# TODO Phase 3: Profile inheritance — let cup.yaml extend public.yaml with
-#               only the deltas, instead of duplicating values.
-# TODO Phase 3: Per-profile metadata (description, target audience, since).
+# Phase 2 / M7: profiles are now loaded from individual YAML files with
+# single-string `extends:` inheritance. The exposed PROFILES dict
+# preserves the v0.1.0 shape (display-name keys, flat values dicts) so
+# the GUI's Quick-Profile buttons and the smoke suite see no
+# difference.
+#
+# TODO Phase 3: surface per-profile description in the GUI (tooltip
+#               or status-bar caption when the profile is loaded).
 
-PROFILES: dict[str, dict[str, Any]] = {
-    "Cup / Tournament": {
-        "sv_fps": 40,
-        "sv_maxclients": 12,
-        "g_antilag": 1,
-        "g_antiwarp": 1,
-        "g_friendlyFire": 1,
-        "g_doWarmup": 1,
-        "g_warmup": 60,
-        "g_speed": 320,
-        "g_gravity": 800,
-        "g_knockback": 1000,
-        "team_maxSoldiers": 1,
-        "team_maxMedics": 2,
-        "team_maxEngineers": 2,
-        "team_maxFieldops": 1,
-        "team_maxCovertops": 1,
-        "vanguard_hitbox_strict": 1,
-        "vanguard_hitbox_debug": 0,
-        "vanguard_netcode_profile": "cup",
-        "vanguard_dev": 0,
-    },
-    "Public Server": {
-        "sv_fps": 20,
-        "sv_maxclients": 32,
-        "g_antilag": 1,
-        "g_antiwarp": 1,
-        "g_friendlyFire": 0,
-        "g_doWarmup": 0,
-        "g_warmup": 0,  # warmup disabled — keep value at 0 to avoid validator warning
-        "g_speed": 320,
-        "g_gravity": 800,
-        "g_knockback": 1000,
-        "team_maxSoldiers": -1,
-        "team_maxMedics": -1,
-        "team_maxEngineers": -1,
-        "team_maxFieldops": -1,
-        "team_maxCovertops": -1,
-        "vanguard_hitbox_strict": 1,
-        "vanguard_hitbox_debug": 0,
-        "vanguard_netcode_profile": "public",
-        "vanguard_dev": 0,
-    },
-    "Practice / Scrim": {
-        "sv_fps": 40,
-        "sv_maxclients": 16,
-        "g_antilag": 1,
-        "g_antiwarp": 1,
-        "g_friendlyFire": 1,
-        "g_doWarmup": 0,
-        "g_warmup": 0,  # warmup disabled for fast practice rounds
-        "g_speed": 320,
-        "g_gravity": 800,
-        "g_knockback": 1000,
-        "team_maxSoldiers": -1,
-        "team_maxMedics": -1,
-        "team_maxEngineers": -1,
-        "team_maxFieldops": -1,
-        "team_maxCovertops": -1,
-        "vanguard_hitbox_strict": 1,
-        "vanguard_hitbox_debug": 1,  # diagnostics on for practice
-        "vanguard_netcode_profile": "cup",
-        "vanguard_dev": 1,           # dev features on for practice
-    },
-}
+_PROFILE_SET = load_profile_set(default_profiles_path())
+
+
+def _build_legacy_profiles_dict() -> dict[str, dict[str, Any]]:
+    """Render the loaded ProfileSet into the v0.1.0 inline shape.
+
+    Each user-visible profile resolves through its inheritance chain;
+    the human-readable ``profile_name`` becomes the dict key (matching
+    the v0.1.0 keys "Cup / Tournament", "Public Server", "Practice /
+    Scrim") and the merged values dict becomes the value. Cvar names
+    are validated against CVARS during the resolve so a typo in a
+    profile YAML fails at module import, not silently in the GUI.
+    """
+    known = set(CVARS.keys())
+    out: dict[str, dict[str, Any]] = {}
+    for stem in _PROFILE_SET.list_names():
+        resolved = _PROFILE_SET.resolve(stem, valid_cvars=known)
+        out[resolved.profile_name] = resolved.values
+    return out
+
+
+PROFILES: dict[str, dict[str, Any]] = _build_legacy_profiles_dict()
 
 
 # ============================================================================
