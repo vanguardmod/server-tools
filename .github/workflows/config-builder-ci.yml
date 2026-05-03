@@ -29,6 +29,9 @@ on:
 defaults:
   run:
     working-directory: config-builder
+    shell: bash                      # PowerShell on windows-latest chokes on
+                                     # backslash-line-continuation in multi-line
+                                     # `run:` blocks; force bash everywhere.
 
 jobs:
   lint:
@@ -66,10 +69,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install pytest
-        run: pip install pytest
+      - name: Install dev dependencies (runtime deps + pytest + ruff)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
 
-      - name: Run smoke tests
+      - name: Run tests
         run: python -m pytest tests/ -v
 
       # TODO Phase 3: Add coverage reporting via pytest-cov + codecov upload.

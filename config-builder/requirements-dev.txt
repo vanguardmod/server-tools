@@ -1,0 +1,4 @@
+# Dev install — pulls runtime deps from pyproject.toml's
+# [project.dependencies] plus the [project.optional-dependencies] dev
+# extras (pytest, ruff). Use this from CI and from local dev shells.
+-e .[dev]

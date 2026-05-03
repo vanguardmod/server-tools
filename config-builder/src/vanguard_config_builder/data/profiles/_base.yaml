@@ -1,0 +1,28 @@
+# =============================================================================
+# Base profile — shared baseline for all concrete VanguardMod profiles.
+# -----------------------------------------------------------------------------
+# Carries the cvar values that are identical across the v0.1.0 Cup,
+# Public, and Practice profiles, plus a couple of cvar defaults that
+# concrete profiles selectively override (vanguard_hitbox_debug,
+# vanguard_dev — Practice flips these to 1; everyone else keeps the
+# base value of 0).
+#
+# By naming convention this file starts with `_`, which means
+# ProfileSet.list_names() filters it out — server admins selecting a
+# profile in the GUI or via `--profile` will never see it. It is only
+# loadable as the parent of an `extends:` chain.
+# =============================================================================
+
+profile_name: "Base Defaults"
+description: "Shared baseline inherited by all concrete profiles"
+
+values:
+  g_speed: 320
+  g_gravity: 800
+  g_knockback: 1000
+  g_antilag: 1
+  g_antiwarp: 1
+  g_warmup: 30                  # cvar default; concrete profiles override
+  vanguard_hitbox_strict: 1
+  vanguard_hitbox_debug: 0
+  vanguard_dev: 0

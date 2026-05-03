@@ -40,6 +40,9 @@ permissions:
 defaults:
   run:
     working-directory: config-builder
+    shell: bash                      # PowerShell on windows-latest chokes on
+                                     # backslash-line-continuation in multi-line
+                                     # `run:` blocks; force bash everywhere.
 
 jobs:
   # --------------------------------------------------------------------------
@@ -73,8 +76,9 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
-          # TODO Phase 2: Add runtime deps (PyYAML etc.) here
+          pip install -r requirements.txt pyinstaller
+          # requirements.txt resolves to `-e .` so the runtime deps
+          # (PyYAML, pydantic) declared in pyproject.toml come along.
 
       - name: Resolve version
         id: version
@@ -92,14 +96,33 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Resolved version: ${VERSION}"
 
+      - name: Resolve --add-data path separator
+        id: pyi
+        run: |
+          # PyInstaller --add-data uses ':' on Linux+macOS and ';' on
+          # Windows. Compute it once and reuse below.
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            echo "sep=;" >> $GITHUB_OUTPUT
+          else
+            echo "sep=:" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build standalone binary
         run: |
+          # The bundled YAML files must travel inside the executable so
+          # the resolver in vanguard_config_builder/_resources.py finds
+          # them at sys._MEIPASS. Both source-file paths (left of SEP)
+          # and in-bundle destinations (right of SEP) are package-
+          # relative — keeping the bundle layout identical to the
+          # source layout means _resources.py needs no special-casing
+          # beyond the sys._MEIPASS check.
+          SEP="${{ steps.pyi.outputs.sep }}"
           pyinstaller --noconfirm --onefile --windowed \
             --name vanguard-config-builder \
-            main.py
-          # TODO Phase 2: Add --icon assets/icon.ico (Win) / icon.icns (mac)
-          # TODO Phase 2: Add --add-data "data/cvars.yaml:data" once the
-          #               cvar database is externalized.
+            --add-data "src/vanguard_config_builder/data/cvars.yaml${SEP}vanguard_config_builder/data" \
+            --add-data "src/vanguard_config_builder/data/profiles${SEP}vanguard_config_builder/data/profiles" \
+            entrypoint.py
+          # TODO Phase 3: Add --icon assets/icon.ico (Win) / icon.icns (mac)
 
       - name: Rename and stage artifact
         shell: bash

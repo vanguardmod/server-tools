@@ -1,0 +1,244 @@
+# =============================================================================
+# VanguardMod cvar database
+# -----------------------------------------------------------------------------
+# This file is the single source of truth for which cvars the config-builder
+# knows about. It was extracted 1:1 from the inline `CVARS` dict in the
+# v0.1.0 main.py prototype. Adding new cvars or new categories does not
+# require any Python changes — just edit this file and re-launch the tool.
+#
+# Format reference: see ../docs/CVAR_DATABASE_SCHEMA.md (added in M10).
+# Schema is enforced at load time by core/cvar_database.py (pydantic v2).
+# =============================================================================
+
+schema_version: 1
+
+categories:
+  - { id: identity,  label: "Server Identity",  order: 1 }
+  - { id: network,   label: "Network Settings", order: 2 }
+  - { id: match,     label: "Match Rules",      order: 3 }
+  - { id: hitbox,    label: "Hitbox / Combat",  order: 4 }
+  - { id: anticheat, label: "Anti-Cheat & Dev", order: 5 }
+
+cvars:
+
+  # ---------------------------------------------------------------------------
+  # Server Identity
+  # ---------------------------------------------------------------------------
+  sv_hostname:
+    type: string
+    default: "VanguardMod Server"
+    category: identity
+    description: "Server name shown in the server browser"
+    archive: true
+    secret: false
+
+  g_motd:
+    type: string
+    default: ""
+    category: identity
+    description: "Message of the Day shown to connecting players"
+    archive: true
+    secret: false
+
+  rconpassword:
+    type: string
+    default: ""
+    category: identity
+    description: "Remote console password (KEEP SECRET)"
+    archive: false
+    secret: true
+
+  g_password:
+    type: string
+    default: ""
+    category: identity
+    description: "Server join password (leave empty for public server)"
+    archive: false
+    secret: true
+
+  # ---------------------------------------------------------------------------
+  # Network
+  # ---------------------------------------------------------------------------
+  sv_fps:
+    type: int
+    default: 20
+    range: [20, 125]
+    category: network
+    description: "Server tick rate. Cup standard: 40. Public default: 20."
+    archive: true
+    secret: false
+
+  sv_maxclients:
+    type: int
+    default: 32
+    range: [2, 64]
+    category: network
+    description: "Maximum number of player slots"
+    archive: true
+    secret: false
+
+  g_antilag:
+    type: bool
+    default: 1
+    category: network
+    description: "Enable lag compensation for hit detection"
+    archive: true
+    secret: false
+
+  g_antiwarp:
+    type: bool
+    default: 1
+    category: network
+    description: "Enable anti-warp (rejects abnormal client movement)"
+    archive: true
+    secret: false
+
+  vanguard_netcode_profile:
+    type: enum
+    default: public
+    options:
+      - { value: cup,    label: "Cup (40fps tight)" }
+      - { value: public, label: "Public (20fps standard)" }
+      - { value: custom, label: "Custom" }
+    category: network
+    description: "Netcode preset: cup=40fps tight, public=20fps standard"
+    archive: true
+    secret: false
+
+  # ---------------------------------------------------------------------------
+  # Match Rules
+  # ---------------------------------------------------------------------------
+  g_friendlyFire:
+    type: bool
+    default: 1
+    category: match
+    description: "Allow players to damage their own teammates"
+    archive: true
+    secret: false
+
+  g_doWarmup:
+    type: bool
+    default: 0
+    category: match
+    description: "Enable warmup phase before round start"
+    archive: true
+    secret: false
+
+  g_warmup:
+    type: int
+    default: 30
+    range: [0, 300]
+    category: match
+    description: "Warmup duration in seconds (only if g_doWarmup=1)"
+    archive: true
+    secret: false
+
+  g_speed:
+    type: int
+    default: 320
+    range: [100, 999]
+    category: match
+    description: "Player movement speed (320 = vanilla)"
+    archive: true
+    secret: false
+
+  g_gravity:
+    type: int
+    default: 800
+    range: [1, 9999]
+    category: match
+    description: "World gravity (800 = vanilla)"
+    archive: true
+    secret: false
+
+  g_knockback:
+    type: int
+    default: 1000
+    range: [0, 9999]
+    category: match
+    description: "Damage knockback multiplier (1000 = vanilla)"
+    archive: true
+    secret: false
+
+  team_maxSoldiers:
+    type: int
+    default: -1
+    range: [-1, 32]
+    category: match
+    description: "Max soldiers per team (-1 = unlimited)"
+    archive: true
+    secret: false
+
+  team_maxMedics:
+    type: int
+    default: -1
+    range: [-1, 32]
+    category: match
+    description: "Max medics per team (-1 = unlimited)"
+    archive: true
+    secret: false
+
+  team_maxEngineers:
+    type: int
+    default: -1
+    range: [-1, 32]
+    category: match
+    description: "Max engineers per team (-1 = unlimited)"
+    archive: true
+    secret: false
+
+  team_maxFieldops:
+    type: int
+    default: -1
+    range: [-1, 32]
+    category: match
+    description: "Max field ops per team (-1 = unlimited)"
+    archive: true
+    secret: false
+
+  team_maxCovertops:
+    type: int
+    default: -1
+    range: [-1, 32]
+    category: match
+    description: "Max covert ops per team (-1 = unlimited)"
+    archive: true
+    secret: false
+
+  # ---------------------------------------------------------------------------
+  # Hitbox / Combat (VanguardMod-specific)
+  # ---------------------------------------------------------------------------
+  vanguard_hitbox_strict:
+    type: bool
+    default: 1
+    category: hitbox
+    description: "Strict mode: reject hits without bone-region match"
+    archive: true
+    secret: false
+
+  vanguard_hitbox_debug:
+    type: bool
+    default: 0
+    category: hitbox
+    description: "Print VG_DIAG strict-hitbox reject lines to log"
+    archive: false
+    secret: false
+
+  vanguard_diag_dump:
+    type: bool
+    default: 0
+    category: hitbox
+    description: "One-shot capsule diagnostic dump (auto-resets)"
+    archive: false
+    secret: false
+
+  # ---------------------------------------------------------------------------
+  # Anti-Cheat / Dev
+  # ---------------------------------------------------------------------------
+  vanguard_dev:
+    type: bool
+    default: 0
+    category: anticheat
+    description: "Enable dev features (gates cg_vanguardDevMultibox etc.)"
+    archive: false
+    secret: false
