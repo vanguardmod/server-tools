@@ -64,7 +64,7 @@ vanguard-config-builder = "main:main"
 # block collapses to a single `[tool.setuptools.packages.find]` entry.
 
 [tool.setuptools]
-py-modules = ["main"]
+py-modules = ["main", "cli"]
 
 [tool.setuptools.packages.find]
 include = ["core", "core.*"]
