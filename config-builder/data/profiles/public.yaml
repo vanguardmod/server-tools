@@ -1,0 +1,29 @@
+# =============================================================================
+# Public Server profile — low-tickrate, no-friendly-fire pub config.
+# -----------------------------------------------------------------------------
+# Inherits the shared baseline from _base.yaml and overrides for a
+# casual high-slot server (32 players, friendly fire off, no warmup,
+# unlimited per-team class slots, public netcode preset).
+#
+# Note that g_warmup is explicitly overridden to 0 — without this
+# override the resolved value would be _base's 30, which would in
+# turn trip the validator's "g_warmup is set but g_doWarmup=0"
+# cross-cvar rule.
+# =============================================================================
+
+profile_name: "Public Server"
+description: "32-slot pub setup (20fps, no friendly fire, unlimited classes)"
+extends: _base
+
+overrides:
+  sv_fps: 20
+  sv_maxclients: 32
+  g_friendlyFire: 0
+  g_doWarmup: 0
+  g_warmup: 0
+  team_maxSoldiers: -1
+  team_maxMedics: -1
+  team_maxEngineers: -1
+  team_maxFieldops: -1
+  team_maxCovertops: -1
+  vanguard_netcode_profile: public

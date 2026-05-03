@@ -1,0 +1,31 @@
+# =============================================================================
+# Practice / Scrim profile — fast iteration, diagnostics on.
+# -----------------------------------------------------------------------------
+# Inherits the shared baseline from _base.yaml. Differs from cup in
+# that warmup is off (faster restart loops), unlimited classes,
+# slightly larger slot count, and the strict-hitbox debug log + dev
+# features are enabled so players can capture VG_DIAG output during
+# practice rounds.
+#
+# Like public.yaml, g_warmup is explicitly overridden to 0 to keep
+# the validator's warmup-vs-doWarmup cross-cvar rule clean.
+# =============================================================================
+
+profile_name: "Practice / Scrim"
+description: "Fast practice loop with diagnostics enabled"
+extends: _base
+
+overrides:
+  sv_fps: 40
+  sv_maxclients: 16
+  g_friendlyFire: 1
+  g_doWarmup: 0
+  g_warmup: 0
+  team_maxSoldiers: -1
+  team_maxMedics: -1
+  team_maxEngineers: -1
+  team_maxFieldops: -1
+  team_maxCovertops: -1
+  vanguard_hitbox_debug: 1
+  vanguard_netcode_profile: cup
+  vanguard_dev: 1

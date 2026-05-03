@@ -1,0 +1,24 @@
+# =============================================================================
+# Cup / Tournament profile — ESL-ready competitive setup.
+# -----------------------------------------------------------------------------
+# Inherits the shared baseline from _base.yaml and overrides only the
+# cvars that differ for tournament play (high tickrate, small slot
+# count, strict per-team class limits, warmup enabled).
+# =============================================================================
+
+profile_name: "Cup / Tournament"
+description: "ESL-ready competitive setup (40fps, 6v6, strict class limits)"
+extends: _base
+
+overrides:
+  sv_fps: 40
+  sv_maxclients: 12
+  g_friendlyFire: 1
+  g_doWarmup: 1
+  g_warmup: 60
+  team_maxSoldiers: 1
+  team_maxMedics: 2
+  team_maxEngineers: 2
+  team_maxFieldops: 1
+  team_maxCovertops: 1
+  vanguard_netcode_profile: cup
