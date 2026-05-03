@@ -68,36 +68,13 @@ class TestGeneratorIntegration:
 
 
 # ---------------------------------------------------------------------------
-# Parser tests
-# ---------------------------------------------------------------------------
-class TestParser:
-    def test_parses_basic_seta(self) -> None:
-        result = m.parse_cfg('seta sv_fps "40"')
-        assert result == {"sv_fps": 40}
-
-    def test_parses_basic_set(self) -> None:
-        result = m.parse_cfg('set g_password "secret"')
-        assert result == {"g_password": "secret"}
-
-    def test_skips_comments(self) -> None:
-        text = "// this is a comment\nseta sv_fps \"40\"\n// another"
-        assert m.parse_cfg(text) == {"sv_fps": 40}
-
-    def test_strips_inline_comments(self) -> None:
-        result = m.parse_cfg('seta sv_fps "40" // tickrate')
-        assert result == {"sv_fps": 40}
-
-    def test_skips_blank_lines(self) -> None:
-        text = "\n\nseta sv_fps \"40\"\n\n"
-        assert m.parse_cfg(text) == {"sv_fps": 40}
-
-    def test_coerces_int_types(self) -> None:
-        result = m.parse_cfg('seta sv_fps "40"')
-        assert isinstance(result["sv_fps"], int)
-
-
-# ---------------------------------------------------------------------------
 # Round-trip tests
+#
+# Detailed parser unit tests live in tests/test_cfg_parser.py since M2
+# (Phase 2). The round-trip check stays here because it exercises
+# generator + parser end-to-end through the main.py wrappers — the only
+# place all three (CVARS, generator wrapper, parser wrapper) come
+# together.
 # ---------------------------------------------------------------------------
 class TestRoundTrip:
     @pytest.mark.parametrize("profile_name", list(m.PROFILES.keys()))

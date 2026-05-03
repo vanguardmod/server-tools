@@ -65,6 +65,7 @@ from tkinter import filedialog, messagebox, ttk
 from typing import Any
 
 from core.cfg_generator import generate_cfg as _generate_cfg
+from core.cfg_parser import parse_cfg as _parse_cfg
 
 # ============================================================================
 # VERSION
@@ -443,7 +444,9 @@ def generate_cfg(values: dict[str, Any], profile_name: str = "custom",
 # ============================================================================
 # CFG PARSER
 # ============================================================================
-# TODO Phase 2: Move into core/cfg_parser.py.
+# Phase 2 / M2: implementation moved to core/cfg_parser.py. Wrapper
+# preserves the v0.1.0 call signature and injects CVARS for type
+# coercion. Removed in M9.
 # TODO Phase 3: Handle `bind`, `exec`, conditionals, and other non-cvar
 #               directives — currently we silently skip them.
 # TODO Phase 3: Preserve comments and re-emit on round-trip.
@@ -451,51 +454,7 @@ def generate_cfg(values: dict[str, Any], profile_name: str = "custom",
 
 def parse_cfg(text: str) -> dict[str, Any]:
     """Parse server.cfg text and return a dict of cvar -> value."""
-    result: dict[str, Any] = {}
-
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("//"):
-            continue
-
-        # Strip inline comments
-        if "//" in line:
-            line = line.split("//", 1)[0].strip()
-
-        # Tokenize: `set CVAR "VALUE"` or `seta CVAR "VALUE"` or `cvar VALUE`
-        parts = line.split(None, 2)
-        if len(parts) < 2:
-            continue
-
-        if parts[0].lower() in ("set", "seta", "sets", "setu"):
-            if len(parts) < 3:
-                continue
-            cvar = parts[1]
-            value = parts[2].strip().strip('"')
-        else:
-            # Bare assignment e.g. `sv_hostname "Foo"`
-            cvar = parts[0]
-            value = parts[1].strip().strip('"')
-            if len(parts) > 2:
-                value = (parts[1] + " " + parts[2]).strip().strip('"')
-
-        # Type-coerce based on known schema
-        meta = CVARS.get(cvar)
-        if meta:
-            if meta["type"] == "int":
-                try:
-                    value = int(value)
-                except ValueError:
-                    pass  # leave as string, validator will flag
-            elif meta["type"] == "bool":
-                try:
-                    value = int(value)
-                except ValueError:
-                    pass
-
-        result[cvar] = value
-
-    return result
+    return _parse_cfg(text, CVARS)
 
 
 # ============================================================================
