@@ -63,6 +63,17 @@ That's it. The GUI opens with the default values pre-filled.
 To round-trip an existing config: **File → Import server.cfg...**,
 edit, then **File → Export server.cfg...**.
 
+## Documentation
+
+For server admins extending the tool or scripting it from CI / Ansible:
+
+- [Cvar Database Schema](docs/CVAR_DATABASE_SCHEMA.md) — how to add
+  new cvars and categories to `data/cvars.yaml` without touching Python.
+- [Profile Format](docs/PROFILE_FORMAT.md) — how profile inheritance
+  works and how to write your own `data/profiles/<name>.yaml`.
+- [CLI Usage](docs/CLI_USAGE.md) — every subcommand, every flag, with
+  real-world Ansible / CI examples.
+
 ## Development
 
 ### Running the smoke tests
