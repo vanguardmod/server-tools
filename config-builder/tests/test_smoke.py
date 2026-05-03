@@ -87,33 +87,19 @@ class TestRoundTrip:
 
 
 # ---------------------------------------------------------------------------
-# Validator tests
+# Validator integration: built-in profiles validate clean
+#
+# Detailed validator unit tests live in tests/test_validator.py since M3.
+# This parametrized check stays here because it pins down the contract
+# that all bundled profiles must validate clean against the live CVARS
+# table — a guarantee that crosses module boundaries and is the natural
+# home for the smoke suite.
 # ---------------------------------------------------------------------------
-class TestValidator:
+class TestProfilesValidateClean:
     @pytest.mark.parametrize("profile_name", list(m.PROFILES.keys()))
     def test_built_in_profiles_validate_clean(self, profile_name: str) -> None:
         issues = m.validate(m.PROFILES[profile_name])
         assert issues == [], f"profile '{profile_name}' has issues: {issues}"
-
-    def test_int_out_of_range(self) -> None:
-        issues = m.validate({"sv_fps": 999})
-        assert any("out of range" in i for i in issues)
-
-    def test_enum_invalid_option(self) -> None:
-        issues = m.validate({"vanguard_netcode_profile": "bogus"})
-        assert any("not in" in i for i in issues)
-
-    def test_unknown_cvar_flagged(self) -> None:
-        issues = m.validate({"some_made_up_cvar": "value"})
-        assert any("unknown cvar" in i for i in issues)
-
-    def test_warmup_without_dowarmup_warning(self) -> None:
-        issues = m.validate({"g_warmup": 60, "g_doWarmup": 0})
-        assert any("g_warmup" in i and "g_doWarmup" in i for i in issues)
-
-    def test_high_fps_without_antilag_warning(self) -> None:
-        issues = m.validate({"sv_fps": 40, "g_antilag": 0})
-        assert any("antilag" in i for i in issues)
 
 
 # ---------------------------------------------------------------------------

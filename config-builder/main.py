@@ -66,6 +66,7 @@ from typing import Any
 
 from core.cfg_generator import generate_cfg as _generate_cfg
 from core.cfg_parser import parse_cfg as _parse_cfg
+from core.validator import validate as _validate
 
 # ============================================================================
 # VERSION
@@ -460,57 +461,12 @@ def parse_cfg(text: str) -> dict[str, Any]:
 # ============================================================================
 # VALIDATOR
 # ============================================================================
-# TODO Phase 3: Move into core/validator.py.
-# TODO Phase 3: Add cross-cvar rules (e.g. "g_warmup matters only when
-#               g_doWarmup=1", "sv_fps=40 needs g_antilag=1").
-# TODO Phase 3: Severity levels (error / warning / info).
+# Phase 2 / M3: implementation moved to core/validator.py. Pure refactor,
+# no new rules — those land in Phase 3.
 
 def validate(values: dict[str, Any]) -> list[str]:
     """Return a list of human-readable validation issues."""
-    issues: list[str] = []
-
-    for cvar, value in values.items():
-        meta = CVARS.get(cvar)
-        if not meta:
-            issues.append(f"unknown cvar: {cvar}")
-            continue
-
-        if meta["type"] == "int":
-            try:
-                ivalue = int(value)
-            except (TypeError, ValueError):
-                issues.append(f"{cvar}: value '{value}' is not an integer")
-                continue
-            rng = meta["range"]
-            if rng and not (rng[0] <= ivalue <= rng[1]):
-                issues.append(
-                    f"{cvar}: value {ivalue} out of range "
-                    f"[{rng[0]}..{rng[1]}]"
-                )
-
-        elif meta["type"] == "bool":
-            if value not in (0, 1, "0", "1"):
-                issues.append(f"{cvar}: bool must be 0 or 1, got '{value}'")
-
-        elif meta["type"] == "enum":
-            options = meta["range"] or []
-            if value not in options:
-                issues.append(
-                    f"{cvar}: value '{value}' not in {options}"
-                )
-
-    # ---- Cross-cvar sanity checks (rough, expand in Phase 3) --------------
-    if values.get("g_doWarmup") in (0, "0") and int(values.get("g_warmup", 0)) > 0:
-        issues.append(
-            "g_warmup is set but g_doWarmup=0 — warmup will be ignored"
-        )
-
-    if int(values.get("sv_fps", 20)) >= 40 and values.get("g_antilag") in (0, "0"):
-        issues.append(
-            "sv_fps>=40 without g_antilag=1 is unusual for high-tickrate play"
-        )
-
-    return issues
+    return _validate(values, CVARS)
 
 
 # ============================================================================
