@@ -40,6 +40,9 @@ permissions:
 defaults:
   run:
     working-directory: config-builder
+    shell: bash                      # PowerShell on windows-latest chokes on
+                                     # backslash-line-continuation in multi-line
+                                     # `run:` blocks; force bash everywhere.
 
 jobs:
   # --------------------------------------------------------------------------
