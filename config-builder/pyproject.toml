@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vanguard-config-builder"
-version = "0.1.0"
+version = "0.2.0"
 description = "Desktop GUI to generate and validate VanguardMod server.cfg files"
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }

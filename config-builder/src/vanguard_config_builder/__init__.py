@@ -43,7 +43,7 @@ from .core.validator import validate as _validate
 # extra package data or fragile path math that breaks in PyInstaller
 # bundles. One hardcoded number, three sources to keep aligned, all
 # touched together at release time.
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 # ---------------------------------------------------------------------------
